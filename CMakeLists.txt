@@ -19,7 +19,7 @@ FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download
 FetchContent_MakeAvailable(json)
 
 # ---- console client + mod loader library (no GUI dependencies) ----
-add_library(xbox_core STATIC src/xbdm.cpp src/xrpc.cpp src/mod.cpp)
+add_library(xbox_core STATIC src/xbdm.cpp src/xrpc.cpp src/mod.cpp src/scanner.cpp)
 target_include_directories(xbox_core PUBLIC src)
 target_link_libraries(xbox_core PUBLIC Threads::Threads nlohmann_json::nlohmann_json)
 if(WIN32)
@@ -34,6 +34,11 @@ if(NOT WIN32)
     target_link_libraries(core_test PRIVATE xbox_core)
     add_test(NAME core_test COMMAND core_test)
 endif()
+
+# Scanner tests use fake memory, so they run everywhere (including Windows).
+add_executable(scanner_test tests/scanner_test.cpp)
+target_link_libraries(scanner_test PRIVATE xbox_core)
+add_test(NAME scanner_test COMMAND scanner_test)
 
 # ---- Dear ImGui core + the builder UI (no window system needed) ----
 if(BUILD_GUI OR BUILD_UI_SMOKE_TEST)
@@ -54,7 +59,7 @@ if(BUILD_GUI OR BUILD_UI_SMOKE_TEST)
         target_compile_options(imgui_core PRIVATE -UNDEBUG)
     endif()
 
-    add_library(builder_ui STATIC src/builder.cpp)
+    add_library(builder_ui STATIC src/builder.cpp src/memtools.cpp)
     target_link_libraries(builder_ui PUBLIC xbox_core imgui_core)
 endif()
 

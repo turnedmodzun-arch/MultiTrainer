@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 
 #include "builder.h"
+#include "memtools.h"
 #include "mod.h"
 #include "xbdm.h"
 #include "xrpc.h"
@@ -96,6 +97,7 @@ struct App
     bool appendNewline = false;
 
     Builder builder;            // state of the Builder tab
+    MemTools memtools;          // state of the Scanner tab (shared with the worker, so it must outlive it)
     bool focusBuilder = false;  // switch to the Builder tab on the next frame
 
     // Declared last so it is destroyed first: its destructor finishes queued
@@ -439,6 +441,24 @@ static void drawUI(App &app)
             }
             ImGui::TextUnformatted(copy.c_str());
             ImGui::EndChild();
+            ImGui::EndTabItem();
+        }
+
+        // ---- scanner (memory search, peek, poke)
+        if (ImGui::BeginTabItem("Scanner"))
+        {
+            MemHost host;
+            host.connected = isConnected;
+            host.io.read = [&app](uint32_t a, uint32_t n, std::vector<uint8_t> &out, std::string &err) {
+                return app.client.getMemory(a, n, out, err);
+            };
+            host.io.alive = [&app] { return app.client.isConnected(); };
+            host.write = [&app](uint32_t a, const std::vector<uint8_t> &d, std::string &err) {
+                return app.client.setMemory(a, d.data(), d.size(), err);
+            };
+            host.submit = [&app](std::function<void()> f) { app.run(std::move(f)); };
+            host.log = [&app](const std::string &m) { app.log(m); };
+            drawMemTools(app.memtools, host);
             ImGui::EndTabItem();
         }
 
