@@ -1,0 +1,23 @@
+{
+  // Modern Warfare 2 Xbox 360 alpha build. Uses Cbuf_AddText through XRPC.
+  "game": "Modern Warfare 2 (Xbox 360 alpha)",
+  "description": "Console-command trainer for the dev/alpha build.",
+  "version": 1,
+  "settings": {
+    "cbuf_address": "0x8226F590",
+    "client": 0,
+    "append_newline": false
+  },
+  "controls": [
+    { "type": "separator", "label": "Player" },
+    { "type": "button", "label": "God mode (toggle)", "cbuf": "god" },
+    { "type": "button", "label": "Noclip (toggle)", "cbuf": "noclip" },
+
+    { "type": "separator", "label": "Display" },
+    { "type": "checkbox", "label": "Draw FPS", "on_cbuf": "cg_drawFPS 1", "off_cbuf": "cg_drawFPS 0" },
+    { "type": "textbox", "label": "Max FPS", "default": "250", "button": "Set", "cbuf": "com_maxfps {value}" },
+
+    { "type": "separator", "label": "Console" },
+    { "type": "textbox", "label": "Run command", "hint": "e.g. set g_speed 300", "button": "Send", "cbuf": "{value}" }
+  ]
+}

@@ -1,0 +1,41 @@
+# Builds the Windows and macOS apps in parallel. Run it from the Actions tab ("Run workflow")
+# or push to main; download the zips from the run's "Artifacts" section.
+name: build
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows-x64
+            os: windows-latest
+            args: -A x64
+          - name: macos-universal      # runs on both Apple Silicon and Intel Macs
+            os: macos-latest
+            args: '"-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0'
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.args }}
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Package
+        run: cmake --install build --config Release --prefix dist/XboxToolkit-${{ matrix.name }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: XboxToolkit-${{ matrix.name }}
+          path: dist

@@ -1,0 +1,24 @@
+{
+  // Shows every control type. Only uses cbuf actions so nothing here touches memory.
+  // Other action types (put these inside an "actions", "on" or "off" array):
+  //   { "poke":   { "addr": "0x82001234", "bytes": "DE AD BE EF" } }
+  //   { "poke32": { "addr": "0x82001234", "value": "{value}" } }       big-endian int
+  //   { "pokef":  { "addr": "0x82001234", "value": 1.5 } }             big-endian float
+  //   { "call":   { "addr": "0x82ABCDEF", "args": [0, "text {value}", { "int": "{value}" }] } }
+  "game": "Example: every control type",
+  "description": "Template for writing your own mod files.",
+  "version": 1,
+  "settings": { "cbuf_address": "0x8226F590", "client": 0 },
+  "controls": [
+    { "type": "label", "text": "Labels are plain text." },
+    { "type": "separator", "label": "Buttons" },
+    { "type": "button", "label": "Single command", "cbuf": "echo hello" },
+    { "type": "button", "label": "Several actions", "actions": [ { "cbuf": "echo one" }, { "cbuf": "echo two" } ] },
+
+    { "type": "separator", "label": "Check boxes" },
+    { "type": "checkbox", "label": "On/off pair", "default": false, "on_cbuf": "echo on", "off_cbuf": "echo off" },
+
+    { "type": "separator", "label": "Text boxes" },
+    { "type": "textbox", "label": "Value goes into {value}", "default": "hello", "button": "Send", "cbuf": "echo {value}" }
+  ]
+}
