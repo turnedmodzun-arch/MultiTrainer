@@ -8,6 +8,8 @@ over a socket, so it builds on Windows, macOS and Linux.
 src/net.h      socket helpers (Winsock / BSD)
 src/xbdm.*     XbdmClient: connect, send a command line, getmem, setmem
 src/xrpc.*     XrpcClient: port of XRPC.Call (buffer at the pointer stored at 0x91C088AE)
+src/scanner.*  memory search engine: typed values, first scan, narrowing next scans (no console/GUI deps)
+src/memtools.* Scanner tab UI: search, results, peek/poke watch list
 src/mod.*      mod file loader + action runner
 src/main.cpp   ImGui + GLFW app (worker thread, so the UI never blocks)
 mods/          sample mod files (copied next to the executable on build)
@@ -35,8 +37,29 @@ libxcursor-dev libxi-dev libgl-dev`). Use `-DBUILD_GUI=OFF` to build only the li
    "< All games" to go back. "Rescan folder" re-reads the folder after you edit or add files.
    Controls are greyed out until you're connected.
 3. **Console** tab: free-form `Cbuf_AddText` box. Opening a mod copies its address into this tab.
-4. **Memory** tab: hex dump reads and hex writes. **Raw XBDM** tab: send any command line.
+4. **Memory** tab: hex dump reads and hex writes. **Scanner** tab: see below. **Raw XBDM** tab: send
+   any command line.
 5. "Show raw protocol trace" prints every line sent and received.
+
+## Scanner: memory search, peek and poke
+
+The **Scanner** tab works like Cheat Engine, on big-endian Xbox 360 memory.
+
+- **Search**: pick a range (Start inclusive, End exclusive; default 16 MB from `82000000`), a type
+  (Int8, Int16, Int32, Float, Bytes as hex, Text as ASCII) and a value, then **First scan**. Ints take
+  decimal or `0x` hex. *Aligned* only checks addresses that are a multiple of the value size. Reads go
+  over XBDM, so big ranges are slow; the bar shows progress and **Cancel** keeps what was found so far.
+  4 KB blocks the console refuses to read are skipped and counted.
+- **Narrow**: change the value in the game, then **Next scan** with *Exact value* (uses the Value box),
+  *Changed*, *Unchanged*, *Increased* or *Decreased*. **Refresh values** re-reads without filtering and
+  **Reset** starts over (the type is locked while results exist).
+- **Peek**: type an address (and a length for Bytes/Text) and press **Peek**, or press **Watch** on a
+  result. **Refresh all** re-reads the list; **Auto-refresh** does it every half second.
+- **Poke**: edit the value in a watch row and press **Poke** (or Enter). The value is written, read
+  back and shown; if the game overwrote it straight away, the log says so.
+
+Limits: the watch list does not freeze (re-write) values yet, and results are capped at 100,000 by
+default (raise "Max results" up to 1,000,000).
 
 The mods folder is `./mods` if it exists, otherwise `mods` next to the executable. You can edit the
 path in the box on the Games tab.
